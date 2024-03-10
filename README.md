@@ -4,7 +4,7 @@
 
 ![Screenshot](https://github.com/Mr-LLLLL/media/blob/master/lualine-ext/lsp.png)
 
-- Show LSP references, implementation, hover.
+- Show LSP references , implementations,  hover on cursor symbol.
 
 ![Screenshot](https://github.com/Mr-LLLLL/media/blob/master/lualine-ext/projects.png)
 
@@ -30,6 +30,7 @@ With [lazy.nvim](https://github.com/folk/lazy.nvim):
         opts = {
             init_tab_project = {
                 disabled = false,
+                -- set this by your colorscheme
                 tabs_color = {
                     inactive = {
                         fg = "#9da9a0",
