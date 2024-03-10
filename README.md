@@ -1,18 +1,18 @@
 # lualine-ext.nvim
 
-> A extensions of [lualine](https://github.com/nvim-lualine/lualine.nvim)  for neovim
+> Show more information on [lualine](https://github.com/nvim-lualine/lualine.nvim)  for Neovim
 
 ![Screenshot](https://github.com/Mr-LLLLL/media/blob/master/lualine-ext/lsp.png)
 
-- show LSP references, implementation, hover.
+- Show LSP references, implementation, hover.
 
 ![Screenshot](https://github.com/Mr-LLLLL/media/blob/master/lualine-ext/projects.png)
 
-- show projects name in tabline_a of lualine
+- Show projects name in tabline_a of lualine
 
 ![Screenshot](https://github.com/Mr-LLLLL/media/blob/master/lualine-ext/date.png)
 
-- show date details in tabline_z of lualine
+- Show date details in tabline_z of lualine
 
 ## Installation
 
@@ -47,7 +47,7 @@ With [lazy.nvim](https://github.com/folk/lazy.nvim):
 
 ![Screenshot](https://github.com/Mr-LLLLL/media/blob/master/lualine-ext/projects.png)
 
-show navic in tabline_c of lualine but need [nvim-navic](https://github.com/SmiteshP/nvim-navic)
+- Show navic in tabline_c of lualine but need [nvim-navic](https://github.com/SmiteshP/nvim-navic)
 
 ``` lua
     {
@@ -65,7 +65,7 @@ show navic in tabline_c of lualine but need [nvim-navic](https://github.com/Smit
 
 ![Screenshot](https://github.com/Mr-LLLLL/media/blob/master/lualine-ext/date.png)
 
-show git blame in tabline_x of lualine but need [gitsigns](https://github.com/lewis6991/gitsigns.nvim)
+- Show git blame in tabline_x of lualine but need [gitsigns](https://github.com/lewis6991/gitsigns.nvim)
 
 ``` lua
 {
