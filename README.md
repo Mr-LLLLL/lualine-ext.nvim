@@ -30,7 +30,7 @@ With [lazy.nvim](https://github.com/folk/lazy.nvim):
         opts = {
             init_tab_project = {
                 disabled = false,
-                -- set this for your colorscheme. I have not default setting in diff coloacheme. 
+                -- set this for your colorscheme. I have not default setting in diff colorcheme. 
                 tabs_color = {
                     inactive = {
                         fg = "#9da9a0",
