@@ -47,14 +47,13 @@ end
 
 m.init_noice = function()
     local old = require("lualine").get_config()
-    table.insert(old.sections.lualine_x, 0, {
+    table.insert(old.sections.lualine_x, 1, {
         require("noice").api.status.mode.get,
         cond = function()
             local msg = require("noice").api.status.mode.get()
             if msg == nil then
                 return false
             end
-            print(msg)
             if string.match(msg, "recording") == "recording" then
                 return true
             else
@@ -63,7 +62,7 @@ m.init_noice = function()
         end,
         color = { fg = "#ff9e64" },
     })
-    table.insert(old.sections.lualine_x, 0, {
+    table.insert(old.sections.lualine_x, 1, {
         require("noice").api.status.command.get,
         cond = require("noice").api.status.command.has,
         color = { fg = "#ff9e64" },
