@@ -62,7 +62,9 @@ With [lazy.nvim](https://github.com/folk/lazy.nvim):
             "nvim-lualine/lualine.nvim",
         },
         config = function()
+            ...
             require("lualine-ext").init_tab_navic()
+            ...
         end
     }
 
@@ -72,6 +74,7 @@ With [lazy.nvim](https://github.com/folk/lazy.nvim):
 
 ![Screenshot](https://github.com/Mr-LLLLL/media/blob/master/lualine-ext/git_blame.png)
 
+
 ``` lua
 {
         'lewis6991/gitsigns.nvim',
@@ -80,7 +83,29 @@ With [lazy.nvim](https://github.com/folk/lazy.nvim):
             "nvim-lualine/lualine.nvim",
         },
         config = function()
+            ...
             require("lualine-ext").init_tab_blame()
+            ...
+        end
+    }
+
+```
+
+- Show key command and recording mode in section_x of lualine but need [noice.nvim](https://github.com/folk/noice.nvim)
+
+![Screenshot](https://github.com/Mr-LLLLL/media/blob/master/lualine-ext/noice.png)
+
+``` lua
+{
+        "folke/noice.nvim",
+        event = "VeryLazy",
+        dependencies = {
+            "nvim-lualine/lualine.nvim",
+        },
+        config = function()
+            ...
+            require("lualine-ext").init_noice()
+            ...
         end
     }
 
