@@ -4,15 +4,15 @@
 
 ![Screenshot](https://github.com/Mr-LLLLL/media/blob/master/lualine-ext/lsp.png)
 
-- Show LSP references , implementations,  hover on cursor symbol.
-
+- Show cursor symbol references, implementations, hover in lualine_c.
+  
 ![Screenshot](https://github.com/Mr-LLLLL/media/blob/master/lualine-ext/projects.png)
 
-- Show projects name in tabline_a of lualine
+- Show projects name in tabline_a of lualine.
 
 ![Screenshot](https://github.com/Mr-LLLLL/media/blob/master/lualine-ext/date.png)
 
-- Show date details in tabline_z of lualine
+- Show date details in tabline_z of lualine.
 
 ## Installation
 
