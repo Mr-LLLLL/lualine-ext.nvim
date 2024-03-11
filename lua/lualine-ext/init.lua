@@ -45,6 +45,32 @@ m.list_or_jump = function(action, f, param)
     end)
 end
 
+m.init_noice = function()
+    local old = require("lualine").get_config()
+    table.insert(old.sections.lualine_x, 0, {
+        require("noice").api.status.mode.get,
+        cond = function()
+            local msg = require("noice").api.status.mode.get()
+            if msg == nil then
+                return false
+            end
+            print(msg)
+            if string.match(msg, "recording") == "recording" then
+                return true
+            else
+                return false
+            end
+        end,
+        color = { fg = "#ff9e64" },
+    })
+    table.insert(old.sections.lualine_x, 0, {
+        require("noice").api.status.command.get,
+        cond = require("noice").api.status.command.has,
+        color = { fg = "#ff9e64" },
+    })
+    require("lualine").setup(old)
+end
+
 m.init_lsp = function()
     local augroup = vim.api.nvim_create_augroup("LualineLspExt", { clear = true })
     vim.api.nvim_create_autocmd(
