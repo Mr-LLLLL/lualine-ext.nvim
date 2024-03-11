@@ -28,6 +28,10 @@ With [lazy.nvim](https://github.com/folk/lazy.nvim):
             -- "nvim-telescope/telescope.nvim"
         },
         opts = {
+            separator = {
+                left = "",
+                right = "",
+            },
             init_tab_project = {
                 disabled = false,
                 -- set this for your colorscheme. I have not default setting in diff colorcheme. 
@@ -46,7 +50,7 @@ With [lazy.nvim](https://github.com/folk/lazy.nvim):
     }
 ```
 
-![Screenshot](https://github.com/Mr-LLLLL/media/blob/master/lualine-ext/projects.png)
+![Screenshot](https://github.com/Mr-LLLLL/media/blob/master/lualine-ext/navic.png)
 
 - Show navic in tabline_c of lualine but need [nvim-navic](https://github.com/SmiteshP/nvim-navic)
 
@@ -64,7 +68,7 @@ With [lazy.nvim](https://github.com/folk/lazy.nvim):
 
 ```
 
-![Screenshot](https://github.com/Mr-LLLLL/media/blob/master/lualine-ext/date.png)
+![Screenshot](https://github.com/Mr-LLLLL/media/blob/master/lualine-ext/git_blame.png)
 
 - Show git blame in tabline_x of lualine but need [gitsigns](https://github.com/lewis6991/gitsigns.nvim)
 

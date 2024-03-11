@@ -221,7 +221,7 @@ m.init_tab_project = function()
 
             return vim.fn.fnamemodify(title, ':h:t') .. project_icon
         end,
-        separator = { left = '', right = '' },
+        separator = { left = m.config.separator.left, right = m.config.separator.right },
         tabs_color = m.config.init_tab_project.tabs_color,
     } }
     require("lualine").setup(old)
@@ -246,11 +246,11 @@ m.init_tab_date = function()
     }
     table.insert(old.tabline.lualine_y, #old.tabline.lualine_y + 1, {
         function() return "󰕶 " .. weeks[os.date('%w')] .. "  " .. os.date('%y-%m-%d') end,
-        separator = { left = '' },
+        separator = { left = m.config.separator.left },
     })
     table.insert(old.tabline.lualine_z, #old.tabline.lualine_z + 1, {
         function() return "󰔛 " .. os.date('%H:%M:%S') end,
-        separator = { right = '' }
+        separator = { right = m.config.separator.right }
     })
     require("lualine").setup(old)
 end
@@ -330,6 +330,10 @@ m.init_tab_navic = function()
 end
 
 m.config = {
+    separator = {
+        left = "",
+        right = "",
+    },
     init_tab_project = {
         disabled = false,
         -- modify by your colorschemo
