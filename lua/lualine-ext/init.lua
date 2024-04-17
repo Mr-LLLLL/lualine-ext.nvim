@@ -70,6 +70,66 @@ m.init_noice = function()
     require("lualine").setup(old)
 end
 
+local function get_full_path(root_dir, value)
+    if vim.loop.os_uname().sysname == "Windows_NT" then
+        return root_dir .. "\\" .. value
+    end
+
+    return root_dir .. "/" .. value
+end
+
+local function is_relative_path(path)
+    return string.sub(path, 1, 1) ~= "/"
+end
+
+m.harpoon_list = function()
+    local indicators = { "1", "2", "3", "4", "5", "6", "7", "8", "9" }
+    local harpoon = require("harpoon")
+    local harpoon_entries = harpoon:list()
+    local root_dir = harpoon_entries.config:get_root_dir()
+    local current_file_path = vim.api.nvim_buf_get_name(0)
+
+    local length = math.min(harpoon_entries:length(), #indicators)
+
+    local status = {}
+
+    local is_show = false
+    for i = 1, length do
+        local harpoon_entry = harpoon_entries:get(i)
+        if not harpoon_entry then
+            return false
+        end
+        local harpoon_path = harpoon_entry.value
+
+        local full_path = nil
+        if is_relative_path(harpoon_path) then
+            full_path = get_full_path(root_dir, harpoon_path)
+        else
+            full_path = harpoon_path
+        end
+
+        local indicator = nil
+        if full_path == current_file_path then
+            indicator = "[" .. indicators[i] .. "]"
+            is_show = true
+        else
+            indicator = indicators[i]
+        end
+
+        if type(indicator) == "function" then
+            table.insert(status, indicator(harpoon_entry))
+        else
+            table.insert(status, indicator)
+        end
+    end
+
+    if is_show then
+        return table.concat(status)
+    else
+        return false
+    end
+end
+
 m.init_lsp = function()
     local augroup = vim.api.nvim_create_augroup("LualineLspExt", { clear = true })
     vim.api.nvim_create_autocmd(
@@ -286,9 +346,17 @@ m.init_harpoon = function(opt)
         old.tabline.lualine_c = { '%=' } -- make the indicator center
     end
     table.insert(old.tabline.lualine_c, #old.tabline.lualine_c + 1, opt or {
-        "harpoon2",
-        indicators = { "1", "2", "3", "4", "5", "6", "7", "8", "9" },
-        active_indicators = { "[1]", "[2]", "[3]", "[4]", "[5]", "[6]", "[7]", "[8]", "[9]" },
+        icon = "󰀱 ",
+        function()
+            return m.harpoon_list()
+        end,
+        cond = function()
+            if m.harpoon_list() then
+                return true
+            else
+                return false
+            end
+        end,
     })
     require("lualine").setup(old)
 end

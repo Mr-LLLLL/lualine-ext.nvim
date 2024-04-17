@@ -50,7 +50,7 @@ With [lazy.nvim](https://github.com/folk/lazy.nvim):
     }
 ```
 
-- Show navic in tabline_c of lualine but need [nvim-navic](https://github.com/SmiteshP/nvim-navic)
+- Show navic in tabline_b of lualine but need [nvim-navic](https://github.com/SmiteshP/nvim-navic)
 
 ![Screenshot](https://github.com/Mr-LLLLL/media/blob/master/lualine-ext/navic.png)
 
@@ -67,6 +67,22 @@ With [lazy.nvim](https://github.com/folk/lazy.nvim):
             ...
         end
     }
+
+```
+
+- Show harpoon in tabline_c of lualine but need [harpoon](https://github.com/ThePrimeagen/harpoon)
+
+``` lua
+   { 
+       "ThePrimeagen/harpoon",
+       branch = "harpoon2",
+       dependencies = { "nvim-lua/plenary.nvim" },
+       config = function()
+       ...
+       require("lualine-ext").init_harpoon()
+       ...
+       end
+   }
 
 ```
 
@@ -110,3 +126,5 @@ With [lazy.nvim](https://github.com/folk/lazy.nvim):
     }
 
 ```
+
+- Show key command and recording mode in section_x of lualine but need [noice.nvim](https://github.com/folk/noice.nvim)
