@@ -93,11 +93,10 @@ m.harpoon_list = function()
 
     local status = {}
 
-    local is_show = false
     for i = 1, length do
         local harpoon_entry = harpoon_entries:get(i)
         if not harpoon_entry then
-            return false
+            break
         end
         local harpoon_path = harpoon_entry.value
 
@@ -111,7 +110,6 @@ m.harpoon_list = function()
         local indicator = nil
         if full_path == current_file_path then
             indicator = "[" .. indicators[i] .. "]"
-            is_show = true
         else
             indicator = indicators[i]
         end
@@ -122,12 +120,11 @@ m.harpoon_list = function()
             table.insert(status, indicator)
         end
     end
-
-    if is_show then
-        return table.concat(status, " ")
-    else
-        return false
+    if #status == 0 then
+        return "[ ]"
     end
+
+    return table.concat(status, " ")
 end
 
 m.init_lsp = function()
@@ -342,21 +339,15 @@ end
 
 m.init_harpoon = function(opt)
     local old = require("lualine").get_config()
-    if not old.tabline.lualine_c then
-        old.tabline.lualine_c = { '%=' } -- make the indicator center
+    if not old.tabline.lualine_b then
+        old.tabline.lualine_b = {}
     end
-    table.insert(old.tabline.lualine_c, #old.tabline.lualine_c + 1, opt or {
+    table.insert(old.tabline.lualine_b, 1, opt or {
         icon = "󰀱 ",
         function()
             return m.harpoon_list()
         end,
-        cond = function()
-            if m.harpoon_list() then
-                return true
-            else
-                return false
-            end
-        end,
+        separator = { right = m.config.separator.right },
     })
     require("lualine").setup(old)
 end
@@ -418,14 +409,13 @@ m.init_tab_navic = function()
     })
 
     local old = require("lualine").get_config()
-    if not old.tabline.lualine_b then
-        old.tabline.lualine_b = {}
+    if not old.tabline.lualine_c then
+        old.tabline.lualine_c = {}
     end
-    table.insert(old.tabline.lualine_b, #old.tabline.lualine_b + 1, {
+    table.insert(old.tabline.lualine_c, 1, {
         function()
             return navic.get_location({ click = true })
         end,
-        separator = { right = m.config.separator.right },
         cond = function()
             return navic.is_available()
         end,
