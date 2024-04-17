@@ -280,6 +280,19 @@ m.init_tab_date = function()
     require("lualine").setup(old)
 end
 
+m.init_harpoon = function(opt)
+    local old = require("lualine").get_config()
+    if not old.tabline.lualine_c then
+        old.tabline.lualine_c = { '%=' } -- make the indicator center
+    end
+    table.insert(old.tabline.lualine_c, #old.tabline.lualine_c + 1, opt or {
+        "harpoon2",
+        indicators = { "1", "2", "3", "4", "5", "6", "7", "8", "9" },
+        active_indicators = { "[1]", "[2]", "[3]", "[4]", "[5]", "[6]", "[7]", "[8]", "[9]" },
+    })
+    require("lualine").setup(old)
+end
+
 m.init_tab_blame = function(opt)
     local old = require("lualine").get_config()
     if not old.tabline.lualine_x then
@@ -337,13 +350,14 @@ m.init_tab_navic = function()
     })
 
     local old = require("lualine").get_config()
-    if not old.tabline.lualine_c then
-        old.tabline.lualine_c = {}
+    if not old.tabline.lualine_b then
+        old.tabline.lualine_b = {}
     end
-    table.insert(old.tabline.lualine_c, #old.tabline.lualine_c + 1, {
+    table.insert(old.tabline.lualine_b, #old.tabline.lualine_b + 1, {
         function()
             return navic.get_location({ click = true })
         end,
+        separator = { right = m.config.separator.right },
         cond = function()
             return navic.is_available()
         end,
