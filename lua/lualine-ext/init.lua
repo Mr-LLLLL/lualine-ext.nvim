@@ -124,7 +124,7 @@ m.harpoon_list = function()
     end
 
     if is_show then
-        return table.concat(status)
+        return table.concat(status, " ")
     else
         return false
     end
