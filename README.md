@@ -72,6 +72,8 @@ With [lazy.nvim](https://github.com/folk/lazy.nvim):
 
 - Show harpoon in tabline_c of lualine but need [harpoon](https://github.com/ThePrimeagen/harpoon)
 
+![Screenshot](https://github.com/Mr-LLLLL/media/blob/master/lualine-ext/harpoon.png)
+
 ``` lua
    { 
        "ThePrimeagen/harpoon",
