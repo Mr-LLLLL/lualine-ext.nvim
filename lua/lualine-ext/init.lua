@@ -276,23 +276,11 @@ m.init_tab_project = function()
                 return bufferPath .. file_icon
             end
 
-            if bufferPath:sub(1, 1) ~= '/' then
-                bufferPath = vim.fn.getcwd() .. "/" .. bufferPath
-
-                local title = vim.fn.findfile('.git', bufferPath .. ';')
-                if title == "" then
-                    title = vim.fn.finddir('.git', bufferPath .. ';')
-                end
-                title = vim.fn.getcwd() .. "/" .. title
-                return vim.fn.fnamemodify(title, ':h:t') .. project_icon
-            end
-
-            local title = vim.fn.findfile('.git', bufferPath .. ';')
-            if title == "" then
-                title = vim.fn.finddir('.git', bufferPath .. ';')
-            end
-
-            if title == "" then
+            local root = vim.fs.root(0,
+                { ".git", ".svn", "Makefile", "mvnw", "package.json", "go.mod", "Cargo.toml" })
+            if root then
+                return vim.fn.fnamemodify(root, ':t') .. project_icon
+            else
                 if vim.fn.getqflist({ ['qfbufnr'] = 0 }).qfbufnr == bufnr then
                     return '[Quickfix List]'
                 elseif winid and vim.fn.getloclist(winid, { ['qfbufnr'] = 0 }).qfbufnr == bufnr then
@@ -300,8 +288,6 @@ m.init_tab_project = function()
                 end
                 return vim.fn.fnamemodify(bufferPath, ':p:t') .. file_icon
             end
-
-            return vim.fn.fnamemodify(title, ':h:t') .. project_icon
         end,
         separator = { left = m.config.separator.left, right = m.config.separator.right },
         tabs_color = m.config.init_tab_project.tabs_color,
