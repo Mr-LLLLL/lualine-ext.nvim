@@ -270,7 +270,7 @@ m.init_tab_project = function()
 
             local root = vim.fs.root(context.file,
                 { ".git", ".svn", "Makefile", "mvnw" })
-            if root then
+            if root and root ~= "." then
                 return vim.fn.fnamemodify(root, ':t') .. project_icon
             else
                 return vim.fn.fnamemodify(context.file, ':p:t') .. file_icon
