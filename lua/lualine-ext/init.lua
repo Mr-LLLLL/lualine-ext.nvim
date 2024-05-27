@@ -277,7 +277,7 @@ m.init_tab_project = function()
             end
 
             local root = vim.fs.root(0,
-                { ".git", ".svn", "Makefile", "mvnw", "package.json", "go.mod", "Cargo.toml" })
+                { ".git", ".svn", "Makefile", "mvnw" })
             if root then
                 return vim.fn.fnamemodify(root, ':t') .. project_icon
             else
