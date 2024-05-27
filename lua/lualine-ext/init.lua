@@ -262,31 +262,18 @@ m.init_tab_project = function()
         mode = 2,
         fmt = function(_, context)
             local emptyName = '[No Name]'
-            local buflist = vim.fn.tabpagebuflist(context.tabnr)
-            local winnr = vim.fn.tabpagewinnr(context.tabnr)
-            local bufnr = buflist[winnr]
-            local winid = vim.fn.win_getid(winnr, context.tabnr)
-            local bufferPath = vim.fn.bufname(bufnr)
-            local project_icon = vim.fn.tabpagenr() == context.tabnr and " " or " "
-            local file_icon = vim.fn.tabpagenr() == context.tabnr and " " or " "
-            if bufferPath == "" then
+            local project_icon = context.current and " " or " "
+            local file_icon = context.current and " " or " "
+            if context.file == "" then
                 return emptyName .. file_icon
             end
-            if vim.api.nvim_buf_get_option(bufnr, 'buftype') == "nofile" then
-                return bufferPath .. file_icon
-            end
 
-            local root = vim.fs.root(0,
+            local root = vim.fs.root(context.file,
                 { ".git", ".svn", "Makefile", "mvnw" })
             if root then
                 return vim.fn.fnamemodify(root, ':t') .. project_icon
             else
-                if vim.fn.getqflist({ ['qfbufnr'] = 0 }).qfbufnr == bufnr then
-                    return '[Quickfix List]'
-                elseif winid and vim.fn.getloclist(winid, { ['qfbufnr'] = 0 }).qfbufnr == bufnr then
-                    return '[Location List]'
-                end
-                return vim.fn.fnamemodify(bufferPath, ':p:t') .. file_icon
+                return vim.fn.fnamemodify(context.file, ':p:t') .. file_icon
             end
         end,
         separator = { left = m.config.separator.left, right = m.config.separator.right },
