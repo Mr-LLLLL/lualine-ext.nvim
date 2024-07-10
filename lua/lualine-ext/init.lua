@@ -199,8 +199,8 @@ m.init_lsp = function()
                                         if content[i] == "```" then
                                             break
                                         end
-                                        lsp_info[k] = lsp_info[k] ..
-                                            string.match(vim.trim(content[i]), ".*[^,]$*") .. " "
+                                        local cont = string.match(vim.trim(content[i]), ".*[^,]$*") or ""
+                                        lsp_info[k] = lsp_info[k] .. cont .. " "
                                     end
                                 end
                             else
