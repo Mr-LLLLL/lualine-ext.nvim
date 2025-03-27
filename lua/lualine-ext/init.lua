@@ -7,7 +7,7 @@ local lsp_info = {
 }
 
 m.list_or_jump = function(action, f, param)
-    local lspParam = vim.lsp.util.make_position_params(vim.fn.win_getid())
+    local lspParam = vim.lsp.util.make_position_params(vim.fn.win_getid(), 'utf-8')
     lspParam.context = { includeDeclaration = false }
     vim.lsp.buf_request(vim.api.nvim_get_current_buf(), action, lspParam, function(err, result, ctx, _)
         if err then
@@ -17,7 +17,7 @@ m.list_or_jump = function(action, f, param)
         local flattened_results = {}
         if result then
             -- textDocument/definition can return Location or Location[]
-            if not vim.tbl_islist(result) then
+            if not vim.islist(result) then
                 flattened_results = { result }
             end
 
@@ -37,7 +37,7 @@ m.list_or_jump = function(action, f, param)
                     vim.cmd("tab split")
                 end
             end
-            vim.lsp.util.jump_to_location(flattened_results[1], offset_encoding)
+            vim.lsp.util.show_document(flattened_results[1], offset_encoding, { focus = true })
             require('telescope.actions').center()
         else
             f(param)
@@ -134,12 +134,12 @@ m.init_lsp = function()
         {
             pattern = { "*.*" },
             callback = function()
-                local lspParam = vim.lsp.util.make_position_params(vim.fn.win_getid())
+                local lspParam = vim.lsp.util.make_position_params(vim.fn.win_getid(), 'utf-8')
                 lspParam.context = { includeDeclaration = false }
                 for k in pairs(lsp_info) do
                     lsp_info[k] = ""
-                    local clients = vim.lsp.get_active_clients({ bufnr = vim.api.nvim_get_current_buf() })
-                    if not vim.tbl_islist(clients) or #clients == 0 then
+                    local clients = vim.lsp.get_clients({ bufnr = vim.api.nvim_get_current_buf() })
+                    if not vim.islist(clients) or #clients == 0 then
                         goto continue
                     end
 
@@ -164,11 +164,11 @@ m.init_lsp = function()
                             end
 
                             local value
-                            if type(result.contents) == 'string' then   -- MarkedString
+                            if type(result.contents) == 'string' then -- MarkedString
                                 value = result.contents
-                            elseif result.contents.language then        -- MarkedString
+                            elseif result.contents.language then      -- MarkedString
                                 value = result.contents.value
-                            elseif vim.tbl_islist(result.contents) then -- MarkedString[]
+                            elseif vim.islist(result.contents) then   -- MarkedString[]
                                 if vim.tbl_isempty(result.contents) then
                                     return
                                 end
@@ -208,7 +208,7 @@ m.init_lsp = function()
                                     lsp_info[k] = string.match(content[2], ".*[^{ ]$*")
                                 end
                             end
-                        elseif vim.tbl_islist(result) then
+                        elseif vim.islist(result) then
                             lsp_info[k] = tostring(#result)
                             return
                         end
@@ -393,7 +393,7 @@ m.init_tab_navic = function()
             return navic.is_available()
         end,
         on_click = function()
-            _G.navic_click_handler(api.nvim_get_current_win())
+            _G.navic_click_handler(vim.api.nvim_get_current_win())
         end
     })
     require("lualine").setup(old)
