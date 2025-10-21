@@ -7,11 +7,18 @@ local lsp_info = {
 }
 
 m.list_or_jump = function(action, f, param)
-    local lspParam = vim.lsp.util.make_position_params(vim.fn.win_getid(), 'utf-8')
-    lspParam.context = { includeDeclaration = false }
+    local lspParam = vim.tbl_deep_extend(
+        'force',
+        vim.lsp.util.make_position_params(vim.fn.win_getid(), 'utf-8'),
+        { context = { includeDeclaration = false } }
+    )
     vim.lsp.buf_request(vim.api.nvim_get_current_buf(), action, lspParam, function(err, result, ctx, _)
         if err then
-            vim.api.nvim_err_writeln("Error when executing " .. action .. " : " .. err.message)
+            vim.api.nvim_echo(
+                { { ("Error when executing %s : %s"):format(action, err.message) } },
+                true,
+                { err = true }
+            )
             return
         end
         local flattened_results = {}
@@ -25,23 +32,24 @@ m.list_or_jump = function(action, f, param)
         end
 
         local offset_encoding = vim.lsp.get_client_by_id(ctx.client_id).offset_encoding
-
-        if #flattened_results == 0 then
+        if vim.tbl_isempty(flattened_results) then
             return
-            -- definitions will be two result in lua, i think first is pretty goods
-        elseif #flattened_results == 1 or action == "textDocument/definition" then
+        end
+        -- definitions will be two result in lua, i think first is pretty goods
+        if #flattened_results == 1 or action == "textDocument/definition" then
             if type(param) == "table" then
                 if param.jump_type == "vsplit" then
-                    vim.cmd("vsplit")
+                    vim.cmd.vsplit()
                 elseif param.jump_type == "tab" then
                     vim.cmd("tab split")
                 end
             end
             vim.lsp.util.show_document(flattened_results[1], offset_encoding, { focus = true })
-            require('telescope.actions').center()
-        else
-            f(param)
+            require('telescope.actions').center(vim.api.nvim_get_current_buf())
+            return
         end
+
+        f(param)
     end)
 end
 
@@ -54,11 +62,8 @@ m.init_noice = function()
             if msg == nil then
                 return false
             end
-            if string.match(msg, "recording") == "recording" then
-                return true
-            else
-                return false
-            end
+
+            return msg:match("recording") == "recording"
         end,
         color = { fg = "#ff9e64" },
     })
@@ -71,15 +76,16 @@ m.init_noice = function()
 end
 
 local function get_full_path(root_dir, value)
-    if vim.loop.os_uname().sysname == "Windows_NT" then
-        return root_dir .. "\\" .. value
+    local sep = "/"
+    if (vim.uv or vim.loop).os_uname().sysname == "Windows_NT" then
+        sep = "\\"
     end
 
-    return root_dir .. "/" .. value
+    return root_dir .. sep .. value
 end
 
 local function is_relative_path(path)
-    return string.sub(path, 1, 1) ~= "/"
+    return path:sub(1, 1) ~= "/"
 end
 
 m.harpoon_list = function()
@@ -90,7 +96,6 @@ m.harpoon_list = function()
     local current_file_path = vim.api.nvim_buf_get_name(0)
 
     local length = math.min(harpoon_entries:length(), #indicators)
-
     local status = {}
 
     for i = 1, length do
@@ -120,7 +125,7 @@ m.harpoon_list = function()
             table.insert(status, indicator)
         end
     end
-    if #status == 0 then
+    if vim.tbl_isempty(status) then
         return "[ ]"
     end
 
@@ -129,126 +134,128 @@ end
 
 m.init_lsp = function()
     local augroup = vim.api.nvim_create_augroup("LualineLspExt", { clear = true })
-    vim.api.nvim_create_autocmd(
-        { "CursorHold" },
-        {
-            pattern = { "*.*" },
-            callback = function()
-                local lspParam = vim.lsp.util.make_position_params(vim.fn.win_getid(), 'utf-8')
-                lspParam.context = { includeDeclaration = false }
-                for k in pairs(lsp_info) do
-                    lsp_info[k] = ""
-                    local clients = vim.lsp.get_clients({ bufnr = vim.api.nvim_get_current_buf() })
-                    if not vim.islist(clients) or #clients == 0 then
+    vim.api.nvim_create_autocmd("CursorHold",
+    {
+        pattern = { "*.*" },
+        callback = function()
+            local lspParam = vim.tbl_deep_extend(
+                'force',
+                vim.lsp.util.make_position_params(vim.fn.win_getid(), 'utf-8'),
+                { context = { includeDeclaration = false } }
+            )
+            for k in pairs(lsp_info) do
+                lsp_info[k] = ""
+                local clients = vim.lsp.get_clients({ bufnr = vim.api.nvim_get_current_buf() })
+                if not vim.islist(clients) or vim.tbl_isempty(clients) then
+                    goto continue
+                end
+
+                for _, client in ipairs(clients) do
+                    if not client:supports_method(k) then
                         goto continue
                     end
+                end
 
-                    for _, client in ipairs(clients) do
-                        if not client.supports_method(k) then
-                            goto continue
-                        end
+                vim.lsp.buf_request(vim.api.nvim_get_current_buf(), k, lspParam, function(err, result, _, _)
+                    if err then
+                        return
                     end
 
-                    vim.lsp.buf_request(vim.api.nvim_get_current_buf(), k, lspParam, function(err, result, _, _)
-                        if err then
+                    if not result then
+                        return
+                    end
+
+                    if k == "textDocument/hover" then
+                        if not result.contents then
                             return
                         end
 
-                        if not result then
-                            return
-                        end
-
-                        if k == "textDocument/hover" then
-                            if not result.contents then
+                        local value
+                        if type(result.contents) == 'string' then -- MarkedString
+                            value = result.contents
+                        elseif result.contents.language then      -- MarkedString
+                            value = result.contents.value
+                        elseif vim.islist(result.contents) then   -- MarkedString[]
+                            if vim.tbl_isempty(result.contents) then
                                 return
                             end
+                            local values = {}
+                            for _, ms in ipairs(result.contents) do
+                                table.insert(values, type(ms) == 'string' and ms or ms.value)
+                            end
+                            value = table.concat(values, '\n')
+                        elseif result.contents.kind then -- MarkupContent
+                            value = result.contents.value
+                        end
 
-                            local value
-                            if type(result.contents) == 'string' then -- MarkedString
-                                value = result.contents
-                            elseif result.contents.language then      -- MarkedString
-                                value = result.contents.value
-                            elseif vim.islist(result.contents) then   -- MarkedString[]
-                                if vim.tbl_isempty(result.contents) then
+                        if not value or #value == 0 then
+                            return
+                        end
+                        local content = vim.split(value, '\n', { trimempty = true })
+                        if clients[1].name == "rust-analyzer" then
+                            if #content > 2 then
+                                lsp_info[k] = content[2]
+                                if #content > 6 and content[5] == "```rust" then
+                                    lsp_info[k] = lsp_info[k] .. "  "
+                                elseif #content == 4 then
+                                    lsp_info[k] = content[3] .. content[2]
+                                else
                                     return
                                 end
-                                local values = {}
-                                for _, ms in ipairs(result.contents) do
-                                    table.insert(values, type(ms) == 'string' and ms or ms.value)
-                                end
-                                value = table.concat(values, '\n')
-                            elseif result.contents.kind then -- MarkupContent
-                                value = result.contents.value
-                            end
-
-                            if not value or #value == 0 then
-                                return
-                            end
-                            local content = vim.split(value, '\n', { trimempty = true })
-                            if clients[1].name == "rust-analyzer" then
-                                if #content > 2 then
-                                    lsp_info[k] = content[2]
-                                    if #content > 6 and content[5] == "```rust" then
-                                        lsp_info[k] = lsp_info[k] .. "  "
-                                    elseif #content == 4 then
-                                        lsp_info[k] = content[3] .. content[2]
-                                    else
-                                        return
+                                for i = 6, #content, 1 do
+                                    if content[i] == "```" then
+                                        break
                                     end
-                                    for i = 6, #content, 1 do
-                                        if content[i] == "```" then
-                                            break
-                                        end
-                                        local cont = string.match(vim.trim(content[i]), ".*[^,]$*") or ""
-                                        lsp_info[k] = lsp_info[k] .. cont .. " "
-                                    end
-                                end
-                            else
-                                if #content > 1 then
-                                    lsp_info[k] = string.match(content[2], ".*[^{ ]$*")
+                                    local cont = vim.trim(content[i]):match(".*[^,]$*") or ""
+                                    lsp_info[k] = lsp_info[k] .. cont .. " "
                                 end
                             end
-                        elseif vim.islist(result) then
-                            lsp_info[k] = tostring(#result)
-                            return
+                        else
+                            if #content > 1 then
+                                lsp_info[k] = content[2]:match(".*[^{ ]$*")
+                            end
                         end
-                    end)
-                    ::continue::
-                end
-            end,
-            group = augroup,
-        }
-    )
+                    elseif vim.islist(result) then
+                        lsp_info[k] = tostring(#result)
+                        return
+                    end
+                end)
+                ::continue::
+            end
+        end,
+        group = augroup,
+    }
+)
 
-    local old = require("lualine").get_config()
-    table.insert(old.sections.lualine_c, #old.sections.lualine_c + 1, {
-        function()
-            return "󰁞 " .. lsp_info["textDocument/references"]
-        end,
-        cond = function()
-            return lsp_info["textDocument/references"] ~= ""
-        end,
-        on_click = m.config.init_lsp.references_on_click
-    })
-    table.insert(old.sections.lualine_c, #old.sections.lualine_c + 1, {
-        function()
-            return " " .. lsp_info["textDocument/implementation"]
-        end,
-        cond = function()
-            return lsp_info["textDocument/implementation"] ~= ""
-        end,
-        on_click = m.config.init_lsp.implementations_on_click
-    })
-    table.insert(old.sections.lualine_c, #old.sections.lualine_c + 1, {
-        function()
-            return " " .. lsp_info["textDocument/hover"]
-        end,
-        cond = function()
-            return lsp_info["textDocument/hover"] ~= ""
-        end,
-        on_click = m.config.init_lsp.document_on_click,
-    })
-    require("lualine").setup(old)
+local old = require("lualine").get_config()
+table.insert(old.sections.lualine_c, #old.sections.lualine_c + 1, {
+    function()
+        return "󰁞 " .. lsp_info["textDocument/references"]
+    end,
+    cond = function()
+        return lsp_info["textDocument/references"] ~= ""
+    end,
+    on_click = m.config.init_lsp.references_on_click
+})
+table.insert(old.sections.lualine_c, #old.sections.lualine_c + 1, {
+    function()
+        return " " .. lsp_info["textDocument/implementation"]
+    end,
+    cond = function()
+        return lsp_info["textDocument/implementation"] ~= ""
+    end,
+    on_click = m.config.init_lsp.implementations_on_click
+})
+table.insert(old.sections.lualine_c, #old.sections.lualine_c + 1, {
+    function()
+        return " " .. lsp_info["textDocument/hover"]
+    end,
+    cond = function()
+        return lsp_info["textDocument/hover"] ~= ""
+    end,
+    on_click = m.config.init_lsp.document_on_click,
+})
+require("lualine").setup(old)
 end
 
 m.init_tab_project = function()
@@ -269,7 +276,7 @@ m.init_tab_project = function()
             end
 
             local root = vim.fs.root(context.file,
-                { ".git", ".svn", "Makefile", "mvnw" })
+            { ".git", ".svn", "Makefile", "mvnw" })
             if root and root ~= "." then
                 return vim.fn.fnamemodify(root, ':t') .. project_icon
             else
@@ -393,7 +400,10 @@ m.init_tab_navic = function()
             return navic.is_available()
         end,
         on_click = function()
-            _G.navic_click_handler(vim.api.nvim_get_current_win())
+            local handler = _G.navic_click_handler or nil
+            if handler and vim.is_callable(handler) then
+                handler(vim.api.nvim_get_current_win())
+            end
         end
     })
     require("lualine").setup(old)
